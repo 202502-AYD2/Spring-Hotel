@@ -1,0 +1,179 @@
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { CheckCircle2, Download, Home } from "lucide-react";
+import { format } from "date-fns";
+import { es } from "date-fns/locale";
+import Navigation from "@/components/Navigation";
+import { toast } from "sonner";
+
+interface Reservation {
+  room: {
+    name: string;
+    type: string;
+  };
+  checkIn: string;
+  checkOut: string;
+  guests: number;
+  total: number;
+  confirmationNumber: string;
+}
+
+const Confirmation = () => {
+  const navigate = useNavigate();
+  const [reservation, setReservation] = useState<Reservation | null>(null);
+
+  useEffect(() => {
+    const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
+    if (!isLoggedIn) {
+      navigate("/login");
+      return;
+    }
+
+    const currentReservation = localStorage.getItem("currentReservation");
+    if (!currentReservation) {
+      toast.error("No se encontró información de reserva");
+      navigate("/rooms");
+      return;
+    }
+
+    setReservation(JSON.parse(currentReservation));
+  }, [navigate]);
+
+  const handleDownload = () => {
+    toast.success("Descargando confirmación de reserva...");
+    // En una aplicación real, aquí se generaría un PDF
+  };
+
+  if (!reservation) {
+    return null;
+  }
+
+  const checkIn = new Date(reservation.checkIn);
+  const checkOut = new Date(reservation.checkOut);
+  const nights = Math.ceil((checkOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60 * 24));
+
+  return (
+    <div className="min-h-screen bg-background">
+      <Navigation />
+      <div className="pt-24 pb-12 px-4">
+        <div className="container mx-auto max-w-3xl">
+          <div className="text-center mb-8">
+            <div className="inline-flex items-center justify-center w-20 h-20 bg-accent/10 rounded-full mb-6">
+              <CheckCircle2 className="w-10 h-10 text-accent" />
+            </div>
+            <h1 className="font-serif text-4xl md:text-5xl font-bold mb-4">
+              ¡Reserva confirmada!
+            </h1>
+            <p className="text-muted-foreground text-lg">
+              Su reserva ha sido procesada exitosamente
+            </p>
+          </div>
+
+          <Card className="shadow-elegant">
+            <CardHeader className="text-center border-b">
+              <CardTitle className="font-serif text-2xl">Detalles de la reserva</CardTitle>
+              <CardDescription>
+                Número de confirmación:{" "}
+                <span className="font-mono font-bold text-accent text-lg">
+                  {reservation.confirmationNumber}
+                </span>
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="pt-6">
+              <div className="space-y-6">
+                <div className="grid md:grid-cols-2 gap-6">
+                  <div className="space-y-4">
+                    <div>
+                      <div className="text-sm text-muted-foreground mb-1">Habitación</div>
+                      <div className="font-semibold text-lg">{reservation.room.name}</div>
+                      <div className="text-sm text-muted-foreground capitalize">
+                        {reservation.room.type}
+                      </div>
+                    </div>
+
+                    <div>
+                      <div className="text-sm text-muted-foreground mb-1">Huéspedes</div>
+                      <div className="font-semibold">
+                        {reservation.guests} {reservation.guests === 1 ? "persona" : "personas"}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-4">
+                    <div>
+                      <div className="text-sm text-muted-foreground mb-1">Check-in</div>
+                      <div className="font-semibold">
+                        {format(checkIn, "EEEE, d 'de' MMMM 'de' yyyy", { locale: es })}
+                      </div>
+                      <div className="text-sm text-muted-foreground">A partir de las 15:00</div>
+                    </div>
+
+                    <div>
+                      <div className="text-sm text-muted-foreground mb-1">Check-out</div>
+                      <div className="font-semibold">
+                        {format(checkOut, "EEEE, d 'de' MMMM 'de' yyyy", { locale: es })}
+                      </div>
+                      <div className="text-sm text-muted-foreground">Hasta las 12:00</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="border-t pt-6">
+                  <div className="bg-muted/50 rounded-lg p-6">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="text-sm text-muted-foreground">
+                        {nights} {nights === 1 ? "noche" : "noches"}
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        ${reservation.total / nights} por noche
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div className="font-semibold text-lg">Total pagado</div>
+                      <div className="text-3xl font-bold text-accent">
+                        ${reservation.total}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="border-t pt-6 space-y-3">
+                  <Button
+                    variant="gold"
+                    className="w-full"
+                    size="lg"
+                    onClick={handleDownload}
+                  >
+                    <Download className="mr-2 h-4 w-4" />
+                    Descargar confirmación
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="w-full"
+                    size="lg"
+                    onClick={() => navigate("/")}
+                  >
+                    <Home className="mr-2 h-4 w-4" />
+                    Volver al inicio
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <div className="mt-8 text-center">
+            <p className="text-muted-foreground">
+              Hemos enviado un correo de confirmación a su dirección registrada.
+              <br />
+              Si tiene alguna pregunta, no dude en contactarnos.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default Confirmation;
