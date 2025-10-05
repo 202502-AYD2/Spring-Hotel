@@ -8,10 +8,14 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
-import { CalendarIcon, Users } from "lucide-react";
+import { CalendarIcon, Users, Mail, Phone, CreditCard } from "lucide-react";
 import Navigation from "@/components/Navigation";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 
 interface Room {
   id: number;
@@ -21,13 +25,32 @@ interface Room {
   rate: number;
 }
 
+const guestSchema = z.object({
+  firstName: z.string().min(2, "El nombre debe tener al menos 2 caracteres"),
+  lastName: z.string().min(2, "El apellido debe tener al menos 2 caracteres"),
+  email: z.string().email("Email inválido"),
+  phone: z.string().min(10, "El teléfono debe tener al menos 10 dígitos"),
+  documentId: z.string().min(5, "El documento debe tener al menos 5 caracteres"),
+});
+
 const Reservation = () => {
   const navigate = useNavigate();
-  const [room, setRoom] = useState<Room | null>(null);
+  const [rooms, setRooms] = useState<Room[]>([]);
   const [checkIn, setCheckIn] = useState<Date>();
   const [checkOut, setCheckOut] = useState<Date>();
   const [guests, setGuests] = useState(1);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  const form = useForm<z.infer<typeof guestSchema>>({
+    resolver: zodResolver(guestSchema),
+    defaultValues: {
+      firstName: "",
+      lastName: "",
+      email: "",
+      phone: "",
+      documentId: "",
+    },
+  });
 
   useEffect(() => {
     const loggedIn = localStorage.getItem("isLoggedIn") === "true";
@@ -39,25 +62,35 @@ const Reservation = () => {
       return;
     }
 
-    const selectedRoom = localStorage.getItem("selectedRoom");
-    if (!selectedRoom) {
+    const selectedRooms = localStorage.getItem("selectedRooms");
+    if (!selectedRooms) {
       toast.error("No se ha seleccionado ninguna habitación");
       navigate("/rooms");
       return;
     }
 
-    setRoom(JSON.parse(selectedRoom));
+    const parsedRooms = JSON.parse(selectedRooms);
+    if (parsedRooms.length === 0) {
+      toast.error("No se ha seleccionado ninguna habitación");
+      navigate("/rooms");
+      return;
+    }
+
+    setRooms(parsedRooms);
   }, [navigate]);
 
   const calculateTotal = () => {
-    if (!checkIn || !checkOut || !room) return 0;
+    if (!checkIn || !checkOut || rooms.length === 0) return 0;
     const nights = Math.ceil((checkOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60 * 24));
-    return nights * room.rate;
+    const totalRate = rooms.reduce((sum, room) => sum + room.rate, 0);
+    return nights * totalRate;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const getTotalCapacity = () => {
+    return rooms.reduce((sum, room) => sum + room.capacity, 0);
+  };
 
+  const onSubmit = (guestData: z.infer<typeof guestSchema>) => {
     if (!checkIn || !checkOut) {
       toast.error("Por favor, seleccione las fechas de su estadía");
       return;
@@ -68,16 +101,17 @@ const Reservation = () => {
       return;
     }
 
-    if (guests > (room?.capacity || 1)) {
-      toast.error(`Esta habitación tiene capacidad para ${room?.capacity} personas máximo`);
+    if (guests > getTotalCapacity()) {
+      toast.error(`Las habitaciones seleccionadas tienen capacidad para ${getTotalCapacity()} personas máximo`);
       return;
     }
 
     const reservation = {
-      room,
+      rooms,
       checkIn,
       checkOut,
       guests,
+      guestData,
       total: calculateTotal(),
       confirmationNumber: Math.random().toString(36).substring(2, 10).toUpperCase(),
     };
@@ -86,7 +120,7 @@ const Reservation = () => {
     navigate("/confirmation");
   };
 
-  if (!isLoggedIn || !room) {
+  if (!isLoggedIn || rooms.length === 0) {
     return null;
   }
 
@@ -110,13 +144,102 @@ const Reservation = () => {
 
           <div className="grid md:grid-cols-2 gap-8">
             {/* Form */}
-            <Card className="shadow-elegant">
-              <CardHeader>
-                <CardTitle className="font-serif text-2xl">Detalles de reserva</CardTitle>
-                <CardDescription>Complete la información requerida</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="space-y-6">
+              {/* Guest Information */}
+              <Card className="shadow-elegant">
+                <CardHeader>
+                  <CardTitle className="font-serif text-2xl">Datos del huésped principal</CardTitle>
+                  <CardDescription>Información de contacto y documento</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Form {...form}>
+                    <div className="space-y-4">
+                      <FormField
+                        control={form.control}
+                        name="firstName"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Nombre</FormLabel>
+                            <FormControl>
+                              <Input placeholder="Juan" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="lastName"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Apellido</FormLabel>
+                            <FormControl>
+                              <Input placeholder="Pérez" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="email"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Email</FormLabel>
+                            <FormControl>
+                              <div className="flex items-center gap-2">
+                                <Mail className="h-4 w-4 text-muted-foreground" />
+                                <Input type="email" placeholder="juan@ejemplo.com" {...field} className="flex-1" />
+                              </div>
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="phone"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Teléfono</FormLabel>
+                            <FormControl>
+                              <div className="flex items-center gap-2">
+                                <Phone className="h-4 w-4 text-muted-foreground" />
+                                <Input placeholder="+34 600 000 000" {...field} className="flex-1" />
+                              </div>
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="documentId"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Documento de identidad</FormLabel>
+                            <FormControl>
+                              <div className="flex items-center gap-2">
+                                <CreditCard className="h-4 w-4 text-muted-foreground" />
+                                <Input placeholder="12345678A" {...field} className="flex-1" />
+                              </div>
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  </Form>
+                </CardContent>
+              </Card>
+
+              {/* Dates and Guests */}
+              <Card className="shadow-elegant">
+                <CardHeader>
+                  <CardTitle className="font-serif text-2xl">Fechas y huéspedes</CardTitle>
+                  <CardDescription>Seleccione las fechas de su estadía</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
                   <div className="space-y-2">
                     <Label>Fecha de entrada</Label>
                     <Popover>
@@ -181,34 +304,50 @@ const Reservation = () => {
                         id="guests"
                         type="number"
                         min="1"
-                        max={room.capacity}
+                        max={getTotalCapacity()}
                         value={guests}
                         onChange={(e) => setGuests(parseInt(e.target.value) || 1)}
                         className="flex-1"
                       />
                     </div>
                     <p className="text-sm text-muted-foreground">
-                      Capacidad máxima: {room.capacity} personas
+                      Capacidad máxima total: {getTotalCapacity()} personas
                     </p>
                   </div>
 
-                  <Button type="submit" variant="gold" className="w-full" size="lg">
+                  <Button 
+                    type="button" 
+                    variant="gold" 
+                    className="w-full" 
+                    size="lg"
+                    onClick={form.handleSubmit(onSubmit)}
+                  >
                     Confirmar reserva
                   </Button>
-                </form>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            </div>
 
             {/* Summary */}
             <div className="space-y-6">
               <Card className="shadow-elegant">
                 <CardHeader>
-                  <CardTitle className="font-serif text-2xl">Resumen</CardTitle>
+                  <CardTitle className="font-serif text-2xl">Resumen de reserva</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div>
-                    <div className="text-sm text-muted-foreground mb-1">Habitación</div>
-                    <div className="font-semibold">{room.name}</div>
+                    <div className="text-sm text-muted-foreground mb-2">Habitaciones seleccionadas</div>
+                    <div className="space-y-2">
+                      {rooms.map((room, index) => (
+                        <div key={index} className="bg-muted/50 rounded-lg p-3">
+                          <div className="font-semibold">{room.name}</div>
+                          <div className="text-sm text-muted-foreground flex items-center justify-between">
+                            <span>{room.capacity} personas</span>
+                            <span className="font-medium">${room.rate}/noche</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
 
                   {checkIn && checkOut && (
@@ -240,7 +379,7 @@ const Reservation = () => {
                           <div>
                             <div className="text-sm text-muted-foreground">Total</div>
                             <div className="text-xs text-muted-foreground">
-                              ${room.rate} × {nights} {nights === 1 ? "noche" : "noches"}
+                              {rooms.length} {rooms.length === 1 ? "habitación" : "habitaciones"} × {nights} {nights === 1 ? "noche" : "noches"}
                             </div>
                           </div>
                           <div className="text-3xl font-bold text-accent">

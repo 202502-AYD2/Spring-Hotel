@@ -8,14 +8,28 @@ import { es } from "date-fns/locale";
 import Navigation from "@/components/Navigation";
 import { toast } from "sonner";
 
+interface Room {
+  id: number;
+  name: string;
+  type: string;
+  capacity: number;
+  rate: number;
+}
+
+interface GuestData {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  documentId: string;
+}
+
 interface Reservation {
-  room: {
-    name: string;
-    type: string;
-  };
+  rooms: Room[];
   checkIn: string;
   checkOut: string;
   guests: number;
+  guestData: GuestData;
   total: number;
   confirmationNumber: string;
 }
@@ -83,13 +97,41 @@ const Confirmation = () => {
             </CardHeader>
             <CardContent className="pt-6">
               <div className="space-y-6">
+                <div className="space-y-4 pb-6 border-b">
+                  <div className="text-sm text-muted-foreground mb-2">Información del huésped</div>
+                  <div className="grid md:grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <span className="text-muted-foreground">Nombre:</span>{" "}
+                      <span className="font-medium">{reservation.guestData.firstName} {reservation.guestData.lastName}</span>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground">Email:</span>{" "}
+                      <span className="font-medium">{reservation.guestData.email}</span>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground">Teléfono:</span>{" "}
+                      <span className="font-medium">{reservation.guestData.phone}</span>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground">Documento:</span>{" "}
+                      <span className="font-medium">{reservation.guestData.documentId}</span>
+                    </div>
+                  </div>
+                </div>
+
                 <div className="grid md:grid-cols-2 gap-6">
                   <div className="space-y-4">
                     <div>
-                      <div className="text-sm text-muted-foreground mb-1">Habitación</div>
-                      <div className="font-semibold text-lg">{reservation.room.name}</div>
-                      <div className="text-sm text-muted-foreground capitalize">
-                        {reservation.room.type}
+                      <div className="text-sm text-muted-foreground mb-2">Habitaciones</div>
+                      <div className="space-y-2">
+                        {reservation.rooms.map((room, index) => (
+                          <div key={index} className="bg-muted/50 rounded p-2">
+                            <div className="font-semibold">{room.name}</div>
+                            <div className="text-sm text-muted-foreground capitalize">
+                              {room.type} - {room.capacity} personas
+                            </div>
+                          </div>
+                        ))}
                       </div>
                     </div>
 
