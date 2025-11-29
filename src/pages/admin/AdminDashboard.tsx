@@ -1,0 +1,162 @@
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
+import { useUserRole } from "@/hooks/useUserRole";
+import Navigation from "@/components/Navigation";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { supabase } from "@/integrations/supabase/client";
+import { Hotel, Calendar, Users, TrendingUp } from "lucide-react";
+
+const AdminDashboard = () => {
+  const navigate = useNavigate();
+  const { user, loading: authLoading } = useAuth();
+  const { isAdmin, loading: roleLoading } = useUserRole(user?.id);
+  const [stats, setStats] = useState({
+    totalRooms: 0,
+    totalReservations: 0,
+    totalUsers: 0,
+    pendingReservations: 0,
+  });
+
+  useEffect(() => {
+    if (!authLoading && !roleLoading) {
+      if (!user) {
+        navigate("/login");
+      } else if (!isAdmin) {
+        navigate("/dashboard");
+      }
+    }
+  }, [user, isAdmin, authLoading, roleLoading, navigate]);
+
+  useEffect(() => {
+    if (user && isAdmin) {
+      fetchStats();
+    }
+  }, [user, isAdmin]);
+
+  const fetchStats = async () => {
+    try {
+      const [roomsRes, reservationsRes, usersRes, pendingRes] = await Promise.all([
+        supabase.from("rooms").select("id", { count: "exact", head: true }),
+        supabase.from("reservations").select("id", { count: "exact", head: true }),
+        supabase.from("profiles").select("id", { count: "exact", head: true }),
+        supabase.from("reservations").select("id", { count: "exact", head: true }).eq("status", "pending"),
+      ]);
+
+      setStats({
+        totalRooms: roomsRes.count || 0,
+        totalReservations: reservationsRes.count || 0,
+        totalUsers: usersRes.count || 0,
+        pendingReservations: pendingRes.count || 0,
+      });
+    } catch (error) {
+      console.error("Error fetching stats:", error);
+    }
+  };
+
+  if (authLoading || roleLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-accent border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Cargando...</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-background">
+      <Navigation />
+      <div className="pt-24 pb-12 px-4">
+        <div className="container mx-auto max-w-7xl">
+          <div className="mb-8">
+            <h1 className="text-4xl font-serif font-bold mb-2">Panel de Administración</h1>
+            <p className="text-muted-foreground">Gestiona todo el sistema hotelero</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <Card className="shadow-elegant">
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-sm font-medium">Habitaciones</CardTitle>
+                <Hotel className="h-4 w-4 text-accent" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{stats.totalRooms}</div>
+                <p className="text-xs text-muted-foreground mt-1">Total de habitaciones</p>
+              </CardContent>
+            </Card>
+
+            <Card className="shadow-elegant">
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-sm font-medium">Reservas</CardTitle>
+                <Calendar className="h-4 w-4 text-accent" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{stats.totalReservations}</div>
+                <p className="text-xs text-muted-foreground mt-1">Total de reservas</p>
+              </CardContent>
+            </Card>
+
+            <Card className="shadow-elegant">
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-sm font-medium">Usuarios</CardTitle>
+                <Users className="h-4 w-4 text-accent" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{stats.totalUsers}</div>
+                <p className="text-xs text-muted-foreground mt-1">Usuarios registrados</p>
+              </CardContent>
+            </Card>
+
+            <Card className="shadow-elegant">
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-sm font-medium">Pendientes</CardTitle>
+                <TrendingUp className="h-4 w-4 text-accent" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{stats.pendingReservations}</div>
+                <p className="text-xs text-muted-foreground mt-1">Reservas pendientes</p>
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <Card className="shadow-elegant hover:shadow-glow transition-smooth cursor-pointer" onClick={() => navigate("/admin/rooms")}>
+              <CardHeader>
+                <CardTitle>Gestionar Habitaciones</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground mb-4">Crear, editar y administrar habitaciones del hotel</p>
+                <Button variant="gold" className="w-full">Ir a Habitaciones</Button>
+              </CardContent>
+            </Card>
+
+            <Card className="shadow-elegant hover:shadow-glow transition-smooth cursor-pointer" onClick={() => navigate("/admin/reservations")}>
+              <CardHeader>
+                <CardTitle>Gestionar Reservas</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground mb-4">Ver, confirmar y gestionar todas las reservas</p>
+                <Button variant="gold" className="w-full">Ir a Reservas</Button>
+              </CardContent>
+            </Card>
+
+            <Card className="shadow-elegant hover:shadow-glow transition-smooth cursor-pointer" onClick={() => navigate("/admin/users")}>
+              <CardHeader>
+                <CardTitle>Gestionar Usuarios</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground mb-4">Administrar usuarios y roles del sistema</p>
+                <Button variant="gold" className="w-full">Ir a Usuarios</Button>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default AdminDashboard;

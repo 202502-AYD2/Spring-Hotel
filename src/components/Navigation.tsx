@@ -1,22 +1,25 @@
-import { Link, useNavigate, useLocation } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { User, LogOut } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useAuth } from "@/hooks/useAuth";
+import { useUserRole } from "@/hooks/useUserRole";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 const Navigation = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const { user } = useAuth();
+  const { role, isAdmin } = useUserRole(user?.id);
 
-  useEffect(() => {
-    const loggedIn = localStorage.getItem("isLoggedIn") === "true";
-    setIsLoggedIn(loggedIn);
-  }, [location]);
-
-  const handleLogout = () => {
-    localStorage.removeItem("isLoggedIn");
-    setIsLoggedIn(false);
-    navigate("/login");
+  const handleLogout = async () => {
+    try {
+      await supabase.auth.signOut();
+      toast.success("Sesión cerrada");
+      navigate("/login");
+    } catch (error) {
+      console.error("Logout error:", error);
+      toast.error("Error al cerrar sesión");
+    }
   };
 
   return (
@@ -30,14 +33,36 @@ const Navigation = () => {
         </Link>
 
         <div className="flex items-center gap-4">
-          {isLoggedIn ? (
+          {user ? (
             <>
-              <Button variant="ghost" onClick={() => navigate("/")}>
-                Inicio
-              </Button>
-              <Button variant="ghost" onClick={() => navigate("/rooms")}>
-                Habitaciones
-              </Button>
+              {isAdmin ? (
+                <>
+                  <Button variant="ghost" onClick={() => navigate("/admin")}>
+                    Dashboard Admin
+                  </Button>
+                  <Button variant="ghost" onClick={() => navigate("/admin/rooms")}>
+                    Habitaciones
+                  </Button>
+                  <Button variant="ghost" onClick={() => navigate("/admin/reservations")}>
+                    Reservas
+                  </Button>
+                  <Button variant="ghost" onClick={() => navigate("/admin/users")}>
+                    Usuarios
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Button variant="ghost" onClick={() => navigate("/dashboard")}>
+                    Mi Dashboard
+                  </Button>
+                  <Button variant="ghost" onClick={() => navigate("/rooms")}>
+                    Habitaciones
+                  </Button>
+                  <Button variant="ghost" onClick={() => navigate("/my-reservations")}>
+                    Mis Reservas
+                  </Button>
+                </>
+              )}
               <Button
                 variant="outline"
                 size="icon"
