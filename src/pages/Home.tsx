@@ -1,34 +1,41 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Calendar, Users } from "lucide-react";
 import Navigation from "@/components/Navigation";
-import { toast } from "sonner";
+import { useAuth } from "@/hooks/useAuth";
+import { useUserRole } from "@/hooks/useUserRole";
 import hotelHero from "@/assets/hotel-hero.jpg";
 
 const Home = () => {
   const navigate = useNavigate();
-  const [guests, setGuests] = useState("1");
-  const [rooms, setRooms] = useState("1");
+  const { user, loading: authLoading } = useAuth();
+  const { role, loading: roleLoading } = useUserRole(user?.id);
 
-  const handleSearch = () => {
-    const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
-    
-    if (!isLoggedIn) {
-      toast.error("Debe iniciar sesión para realizar una reserva");
-      navigate("/login");
-      return;
+  useEffect(() => {
+    if (!authLoading && !roleLoading && user && role) {
+      if (role === 'admin') {
+        navigate('/admin');
+      } else {
+        navigate('/dashboard');
+      }
     }
+  }, [user, role, authLoading, roleLoading, navigate]);
 
-    navigate("/rooms");
-  };
+  if (authLoading || roleLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-accent border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Cargando...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
       <Navigation />
       
-      {/* Hero Section */}
       <div className="relative h-[70vh] min-h-[500px] overflow-hidden">
         <img
           src={hotelHero}
@@ -45,99 +52,42 @@ const Home = () => {
             Experimente el lujo y la elegancia en cada detalle
           </p>
 
-          {/* Search Card */}
-          <Card className="bg-background/95 backdrop-blur-sm shadow-elegant p-6 max-w-4xl w-full">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                  <Calendar className="h-4 w-4" />
-                  Fecha de llegada - Fecha de salida
-                </label>
-                <Button
-                  variant="outline"
-                  className="w-full justify-start text-left font-normal"
-                  onClick={() => navigate("/rooms")}
-                >
-                  Selecciona una fecha
-                </Button>
-              </div>
+          <Button variant="gold" size="lg" onClick={() => navigate("/login")}>
+            Comenzar
+          </Button>
+        </div>
+      </div>
 
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-                  <Users className="h-4 w-4" />
-                  Habitaciones y huéspedes
-                </label>
-                <div className="flex gap-2">
-                  <select
-                    value={rooms}
-                    onChange={(e) => setRooms(e.target.value)}
-                    className="flex-1 h-10 rounded-md border border-input bg-background px-3 py-2 text-sm transition-smooth focus:outline-none focus:ring-2 focus:ring-ring"
-                  >
-                    <option value="1">1 Habitación</option>
-                    <option value="2">2 Habitaciones</option>
-                    <option value="3">3 Habitaciones</option>
-                  </select>
-                  <select
-                    value={guests}
-                    onChange={(e) => setGuests(e.target.value)}
-                    className="flex-1 h-10 rounded-md border border-input bg-background px-3 py-2 text-sm transition-smooth focus:outline-none focus:ring-2 focus:ring-ring"
-                  >
-                    <option value="1">1 Huésped</option>
-                    <option value="2">2 Huéspedes</option>
-                    <option value="3">3 Huéspedes</option>
-                    <option value="4">4 Huéspedes</option>
-                  </select>
-                </div>
+      <section className="py-20 px-4">
+        <div className="container mx-auto max-w-6xl">
+          <h2 className="text-4xl font-serif font-bold text-center mb-12">
+            Bienvenido a Spring Hotel
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="text-center">
+              <div className="w-16 h-16 bg-accent/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                <span className="text-accent text-2xl">★</span>
               </div>
-
-              <div className="flex items-end">
-                <Button
-                  variant="gold"
-                  className="w-full h-10"
-                  onClick={handleSearch}
-                >
-                  Buscar
-                </Button>
-              </div>
+              <h3 className="text-xl font-semibold mb-2">Lujo incomparable</h3>
+              <p className="text-muted-foreground">Habitaciones diseñadas para su máximo confort</p>
             </div>
-          </Card>
-        </div>
-      </div>
-
-      {/* Features Section */}
-      <div className="container mx-auto px-4 py-20">
-        <div className="text-center mb-12">
-          <h2 className="font-serif text-4xl font-bold mb-4">Servicios exclusivos</h2>
-          <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-            Disfrute de una experiencia incomparable con nuestros servicios de primer nivel
-          </p>
-        </div>
-
-        <div className="grid md:grid-cols-3 gap-8">
-          {[
-            {
-              title: "Habitaciones de lujo",
-              description: "Espacios elegantes diseñados para su comodidad y descanso",
-            },
-            {
-              title: "Servicio premium",
-              description: "Atención personalizada las 24 horas del día",
-            },
-            {
-              title: "Experiencias únicas",
-              description: "Actividades y servicios exclusivos para nuestros huéspedes",
-            },
-          ].map((feature, index) => (
-            <Card key={index} className="p-6 shadow-elegant hover:shadow-gold transition-smooth">
-              <div className="w-12 h-12 bg-accent/10 rounded-full flex items-center justify-center mb-4">
-                <div className="w-6 h-6 bg-accent rounded-full" />
+            <div className="text-center">
+              <div className="w-16 h-16 bg-accent/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                <span className="text-accent text-2xl">★</span>
               </div>
-              <h3 className="font-serif text-xl font-semibold mb-2">{feature.title}</h3>
-              <p className="text-muted-foreground">{feature.description}</p>
-            </Card>
-          ))}
+              <h3 className="text-xl font-semibold mb-2">Servicio excepcional</h3>
+              <p className="text-muted-foreground">Atención personalizada las 24 horas</p>
+            </div>
+            <div className="text-center">
+              <div className="w-16 h-16 bg-accent/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                <span className="text-accent text-2xl">★</span>
+              </div>
+              <h3 className="text-xl font-semibold mb-2">Ubicación privilegiada</h3>
+              <p className="text-muted-foreground">En el corazón de la ciudad</p>
+            </div>
+          </div>
         </div>
-      </div>
+      </section>
     </div>
   );
 };

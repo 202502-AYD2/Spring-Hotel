@@ -6,96 +6,65 @@ import { Badge } from "@/components/ui/badge";
 import { Users, Bed, Check, ShoppingCart, Trash2 } from "lucide-react";
 import Navigation from "@/components/Navigation";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 
 interface Room {
-  id: number;
+  id: string;
   name: string;
   type: string;
   capacity: number;
-  rate: number;
-  available: boolean;
+  price: number;
+  status: string;
   features: string[];
 }
 
-const rooms: Room[] = [
-  {
-    id: 1,
-    name: "Suite Presidencial",
-    type: "suite",
-    capacity: 4,
-    rate: 450,
-    available: true,
-    features: ["Vista panorámica", "Jacuzzi privado", "Sala de estar", "Balcón amplio"],
-  },
-  {
-    id: 2,
-    name: "Habitación Doble Deluxe",
-    type: "doble",
-    capacity: 2,
-    rate: 250,
-    available: true,
-    features: ["Cama King Size", "Vista al jardín", "Escritorio", "Minibar"],
-  },
-  {
-    id: 3,
-    name: "Habitación Doble Estándar",
-    type: "doble",
-    capacity: 2,
-    rate: 180,
-    available: true,
-    features: ["Cama Queen Size", "WiFi de alta velocidad", "TV Smart", "Cafetera"],
-  },
-  {
-    id: 4,
-    name: "Habitación Sencilla",
-    type: "sencilla",
-    capacity: 1,
-    rate: 120,
-    available: true,
-    features: ["Cama individual", "Escritorio", "WiFi", "TV"],
-  },
-  {
-    id: 5,
-    name: "Suite Junior",
-    type: "suite",
-    capacity: 3,
-    rate: 320,
-    available: false,
-    features: ["Cama King + sofá cama", "Vista parcial al mar", "Minibar", "Balcón"],
-  },
-  {
-    id: 6,
-    name: "Habitación Familiar",
-    type: "doble",
-    capacity: 4,
-    rate: 280,
-    available: true,
-    features: ["2 camas dobles", "Espacio amplio", "Zona para niños", "Minibar"],
-  },
-];
-
 const Rooms = () => {
   const navigate = useNavigate();
+  const { user, loading: authLoading } = useAuth();
   const [selectedType, setSelectedType] = useState<string>("all");
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [selectedRooms, setSelectedRooms] = useState<Room[]>([]);
+  const [rooms, setRooms] = useState<Room[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const loggedIn = localStorage.getItem("isLoggedIn") === "true";
-    setIsLoggedIn(loggedIn);
-    
-    if (!loggedIn) {
+    if (!authLoading && !user) {
       toast.error("Debe iniciar sesión para ver las habitaciones");
       navigate("/login");
       return;
     }
+  }, [user, authLoading, navigate]);
 
-    // Load previously selected rooms
+  useEffect(() => {
+    if (user) {
+      fetchRooms();
+      loadSelectedRooms();
+    }
+  }, [user]);
+
+  const fetchRooms = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("rooms")
+        .select("*")
+        .order("price", { ascending: true });
+
+      if (error) throw error;
+      setRooms(data || []);
+    } catch (error: any) {
+      console.error("Error fetching rooms:", error);
+      toast.error("Error al cargar habitaciones");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadSelectedRooms = () => {
     const saved = localStorage.getItem("selectedRooms");
     if (saved) {
       setSelectedRooms(JSON.parse(saved));
     }
-  }, [navigate]);
+  };
 
   const filteredRooms = selectedType === "all" 
     ? rooms 
