@@ -71,7 +71,7 @@ const Rooms = () => {
     : rooms.filter(room => room.type === selectedType);
 
   const handleAddRoom = (room: Room) => {
-    if (!room.available) {
+    if (room.status !== 'available') {
       toast.error("Esta habitación no está disponible");
       return;
     }
@@ -97,7 +97,7 @@ const Rooms = () => {
     navigate("/reservation");
   };
 
-  if (!isLoggedIn) {
+  if (authLoading || loading) {
     return null;
   }
 
@@ -132,7 +132,7 @@ const Rooms = () => {
                   <div key={index} className="bg-background rounded-lg p-4 flex items-center justify-between">
                     <div>
                       <div className="font-semibold">{room.name}</div>
-                      <div className="text-sm text-muted-foreground">${room.rate}/noche</div>
+                      <div className="text-sm text-muted-foreground">${room.price}/noche</div>
                     </div>
                     <Button
                       variant="outline"
@@ -181,14 +181,14 @@ const Rooms = () => {
               <Card
                 key={room.id}
                 className={`shadow-elegant hover:shadow-gold transition-smooth ${
-                  !room.available ? "opacity-70" : ""
+                  room.status !== 'available' ? "opacity-70" : ""
                 }`}
               >
                 <CardHeader>
                   <div className="flex items-start justify-between mb-2">
                     <CardTitle className="font-serif text-2xl">{room.name}</CardTitle>
-                    <Badge variant={room.available ? "default" : "secondary"}>
-                      {room.available ? "Disponible" : "No disponible"}
+                    <Badge variant={room.status === 'available' ? "default" : "secondary"}>
+                      {room.status === 'available' ? "Disponible" : "No disponible"}
                     </Badge>
                   </div>
                   <CardDescription className="flex items-center gap-4 text-base">
@@ -206,7 +206,7 @@ const Rooms = () => {
                   <div className="space-y-4">
                     <div className="bg-muted/50 rounded-lg p-4">
                       <div className="text-3xl font-bold text-accent mb-1">
-                        ${room.rate}
+                        ${room.price}
                       </div>
                       <div className="text-sm text-muted-foreground">por noche</div>
                     </div>
@@ -224,12 +224,12 @@ const Rooms = () => {
                     </div>
 
                     <Button
-                      variant={room.available ? "gold" : "outline"}
+                      variant={room.status === 'available' ? "gold" : "outline"}
                       className="w-full"
                       onClick={() => handleAddRoom(room)}
-                      disabled={!room.available}
+                      disabled={room.status !== 'available'}
                     >
-                      {room.available ? "Agregar a reserva" : "No disponible"}
+                      {room.status === 'available' ? "Agregar a reserva" : "No disponible"}
                     </Button>
                   </div>
                 </CardContent>
