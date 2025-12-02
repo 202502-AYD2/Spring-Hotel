@@ -25,3 +25,8 @@ dist-ssr
 
 
 .env
+/src/pages/admin/admin_def.ts
+
+yarn.lock
+.pnp.*
+

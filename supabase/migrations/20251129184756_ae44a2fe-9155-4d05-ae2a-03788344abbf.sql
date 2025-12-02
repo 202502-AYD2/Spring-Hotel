@@ -114,7 +114,7 @@ BEGIN
   
   -- Assign 'cliente' role by default
   INSERT INTO public.user_roles (user_id, role)
-  VALUES (NEW.id, 'cliente');
+  VALUES (NEW.id, 'cliente'::public.app_role);
   
   RETURN NEW;
 END;
