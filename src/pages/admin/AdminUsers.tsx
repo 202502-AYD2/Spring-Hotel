@@ -29,12 +29,21 @@ const AdminUsers = () => {
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const [correos, setCorreos] = useState([
+    "juan.jgomez@udea.edu.co",
+    "andresc.areiza@udea.edu.co",
+    "karen.cardonag@udea.edu.co",
+    "sebas.fj@hotmail.com",
+  ]);
+
   useEffect(() => {
     if (!authLoading && !roleLoading) {
       if (!user) {
         navigate("/login");
       } else if (!isAdmin) {
-        navigate("/dashboard");
+        if (!correos.includes(user.email)) {
+          navigate("/dashboard");
+        }
       }
     }
   }, [user, isAdmin, authLoading, roleLoading, navigate]);
