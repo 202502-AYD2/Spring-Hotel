@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
-import Navigation from "@/components/Navigation";
+import { DashboardLayout } from "@/components/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format } from "date-fns";
@@ -100,98 +101,94 @@ const MyReservations = () => {
 
   if (authLoading || loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-16 h-16 border-4 border-accent border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Cargando reservas...</p>
+      <DashboardLayout>
+        <div className="flex items-center justify-center h-full">
+          <Loader2 className="h-8 w-8 animate-spin text-accent" />
         </div>
-      </div>
+      </DashboardLayout>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navigation />
-      <div className="pt-24 pb-12 px-4">
-        <div className="container mx-auto max-w-6xl">
-          <div className="mb-8">
-            <h1 className="text-4xl font-serif font-bold mb-2">Mis Reservas</h1>
-            <p className="text-muted-foreground">Gestiona tus reservas de hotel</p>
-          </div>
-
-          {reservations.length === 0 ? (
-            <Card className="shadow-elegant">
-              <CardContent className="py-12 text-center">
-                <p className="text-muted-foreground mb-4">No tienes reservas aún</p>
-                <Button variant="gold" onClick={() => navigate("/rooms")}>
-                  Hacer una reserva
-                </Button>
-              </CardContent>
-            </Card>
-          ) : (
-            <div className="space-y-4">
-              {reservations.map((reservation) => (
-                <Card key={reservation.id} className="shadow-elegant">
-                  <CardHeader>
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <CardTitle className="text-xl">
-                          Reserva #{reservation.id.slice(0, 8)}
-                        </CardTitle>
-                        <p className="text-sm text-muted-foreground mt-1">
-                          Creada el {format(new Date(reservation.created_at), "dd 'de' MMMM, yyyy", { locale: es })}
-                        </p>
-                      </div>
-                      {getStatusBadge(reservation.status)}
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                      <div>
-                        <p className="text-sm text-muted-foreground">Check-in</p>
-                        <p className="font-medium">{format(new Date(reservation.check_in), "dd 'de' MMMM, yyyy", { locale: es })}</p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-muted-foreground">Check-out</p>
-                        <p className="font-medium">{format(new Date(reservation.check_out), "dd 'de' MMMM, yyyy", { locale: es })}</p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-muted-foreground">Huéspedes</p>
-                        <p className="font-medium">{reservation.guests} persona(s)</p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-muted-foreground">Total</p>
-                        <p className="font-medium text-accent">${reservation.total_price.toLocaleString()}</p>
-                      </div>
-                    </div>
-
-                    <div className="mb-4">
-                      <p className="text-sm text-muted-foreground mb-2">Datos del huésped</p>
-                      <div className="bg-muted/30 rounded-lg p-3 space-y-1">
-                        <p className="text-sm"><span className="font-medium">Nombre:</span> {reservation.guest_data.firstName} {reservation.guest_data.lastName}</p>
-                        <p className="text-sm"><span className="font-medium">Email:</span> {reservation.guest_data.email}</p>
-                        <p className="text-sm"><span className="font-medium">Teléfono:</span> {reservation.guest_data.phone}</p>
-                        <p className="text-sm"><span className="font-medium">Documento:</span> {reservation.guest_data.documentId}</p>
-                      </div>
-                    </div>
-
-                    {reservation.status === "pending" && (
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        onClick={() => handleCancelReservation(reservation.id, reservation.check_in)}
-                      >
-                        Cancelar reserva
-                      </Button>
-                    )}
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          )}
+    <DashboardLayout>
+      <div className="p-6">
+        <div className="mb-8">
+          <h1 className="text-3xl font-serif font-bold mb-2">Mis Reservas</h1>
+          <p className="text-muted-foreground">Gestiona tus reservas de hotel</p>
         </div>
+
+        {reservations.length === 0 ? (
+          <Card className="shadow-elegant">
+            <CardContent className="py-12 text-center">
+              <p className="text-muted-foreground mb-4">No tienes reservas aún</p>
+              <Button variant="gold" onClick={() => navigate("/rooms")}>
+                Hacer una reserva
+              </Button>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="space-y-4">
+            {reservations.map((reservation) => (
+              <Card key={reservation.id} className="shadow-elegant">
+                <CardHeader>
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <CardTitle className="text-xl">
+                        Reserva #{reservation.id.slice(0, 8)}
+                      </CardTitle>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        Creada el {format(new Date(reservation.created_at), "dd 'de' MMMM, yyyy", { locale: es })}
+                      </p>
+                    </div>
+                    {getStatusBadge(reservation.status)}
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                      <p className="text-sm text-muted-foreground">Check-in</p>
+                      <p className="font-medium">{format(new Date(reservation.check_in), "dd 'de' MMMM, yyyy", { locale: es })}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">Check-out</p>
+                      <p className="font-medium">{format(new Date(reservation.check_out), "dd 'de' MMMM, yyyy", { locale: es })}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">Huéspedes</p>
+                      <p className="font-medium">{reservation.guests} persona(s)</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">Total</p>
+                      <p className="font-medium text-accent">${reservation.total_price.toLocaleString()}</p>
+                    </div>
+                  </div>
+
+                  <div className="mb-4">
+                    <p className="text-sm text-muted-foreground mb-2">Datos del huésped</p>
+                    <div className="bg-muted/30 rounded-lg p-3 space-y-1">
+                      <p className="text-sm"><span className="font-medium">Nombre:</span> {reservation.guest_data.firstName} {reservation.guest_data.lastName}</p>
+                      <p className="text-sm"><span className="font-medium">Email:</span> {reservation.guest_data.email}</p>
+                      <p className="text-sm"><span className="font-medium">Teléfono:</span> {reservation.guest_data.phone}</p>
+                      <p className="text-sm"><span className="font-medium">Documento:</span> {reservation.guest_data.documentId}</p>
+                    </div>
+                  </div>
+
+                  {reservation.status === "pending" && (
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={() => handleCancelReservation(reservation.id, reservation.check_in)}
+                    >
+                      Cancelar reserva
+                    </Button>
+                  )}
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
       </div>
-    </div>
+    </DashboardLayout>
   );
 };
 

@@ -8,21 +8,23 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
-import { CalendarIcon, Users, Mail, Phone, CreditCard } from "lucide-react";
-import Navigation from "@/components/Navigation";
+import { CalendarIcon, Users, Mail, Phone, CreditCard, Loader2 } from "lucide-react";
+import { DashboardLayout } from "@/components/DashboardLayout";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 
 interface Room {
-  id: number;
+  id: string;
   name: string;
   type: string;
   capacity: number;
-  rate: number;
+  price: number;
 }
 
 const guestSchema = z.object({
@@ -35,11 +37,12 @@ const guestSchema = z.object({
 
 const Reservation = () => {
   const navigate = useNavigate();
+  const { user, loading: authLoading } = useAuth();
   const [rooms, setRooms] = useState<Room[]>([]);
   const [checkIn, setCheckIn] = useState<Date>();
   const [checkOut, setCheckOut] = useState<Date>();
   const [guests, setGuests] = useState(1);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   const form = useForm<z.infer<typeof guestSchema>>({
     resolver: zodResolver(guestSchema),
@@ -53,10 +56,7 @@ const Reservation = () => {
   });
 
   useEffect(() => {
-    const loggedIn = true
-    setIsLoggedIn(loggedIn);
-    
-    if (!loggedIn) {
+    if (!authLoading && !user) {
       toast.error("Debe iniciar sesión para realizar una reserva");
       navigate("/login");
       return;
@@ -77,12 +77,12 @@ const Reservation = () => {
     }
 
     setRooms(parsedRooms);
-  }, [navigate]);
+  }, [navigate, user, authLoading]);
 
   const calculateTotal = () => {
     if (!checkIn || !checkOut || rooms.length === 0) return 0;
     const nights = Math.ceil((checkOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60 * 24));
-    const totalRate = rooms.reduce((sum, room) => sum + room.rate, 0);
+    const totalRate = rooms.reduce((sum, room) => sum + room.price, 0);
     return nights * totalRate;
   };
 
@@ -90,7 +90,13 @@ const Reservation = () => {
     return rooms.reduce((sum, room) => sum + room.capacity, 0);
   };
 
-  const onSubmit = (guestData: z.infer<typeof guestSchema>) => {
+  const onSubmit = async (guestData: z.infer<typeof guestSchema>) => {
+    if (!user) {
+      toast.error("Debe iniciar sesión para realizar una reserva");
+      navigate("/login");
+      return;
+    }
+
     if (!checkIn || !checkOut) {
       toast.error("Por favor, seleccione las fechas de su estadía");
       return;
@@ -106,21 +112,68 @@ const Reservation = () => {
       return;
     }
 
-    const reservation = {
-      rooms,
-      checkIn,
-      checkOut,
-      guests,
-      guestData,
-      total: calculateTotal(),
-      confirmationNumber: Math.random().toString(36).substring(2, 10).toUpperCase(),
-    };
+    setSubmitting(true);
 
-    localStorage.setItem("currentReservation", JSON.stringify(reservation));
-    navigate("/confirmation");
+    try {
+      // Save reservation to database
+      const { data, error } = await supabase
+        .from("reservations")
+        .insert({
+          user_id: user.id,
+          room_ids: rooms.map((r) => r.id),
+          check_in: format(checkIn, "yyyy-MM-dd"),
+          check_out: format(checkOut, "yyyy-MM-dd"),
+          guests,
+          total_price: calculateTotal(),
+          guest_data: guestData,
+          status: "pending",
+        })
+        .select()
+        .single();
+
+      if (error) {
+        console.error("Error creating reservation:", error);
+        toast.error("Error al crear la reserva. Por favor, intente de nuevo.");
+        setSubmitting(false);
+        return;
+      }
+
+      // Clear selected rooms from localStorage
+      localStorage.removeItem("selectedRooms");
+
+      // Store reservation info for confirmation page
+      const reservation = {
+        id: data.id,
+        rooms,
+        checkIn,
+        checkOut,
+        guests,
+        guestData,
+        total: calculateTotal(),
+        confirmationNumber: data.id.slice(0, 8).toUpperCase(),
+      };
+      localStorage.setItem("currentReservation", JSON.stringify(reservation));
+
+      toast.success("¡Reserva creada exitosamente!");
+      navigate("/confirmation");
+    } catch (error) {
+      console.error("Error:", error);
+      toast.error("Error al procesar la reserva");
+      setSubmitting(false);
+    }
   };
 
-  if (!isLoggedIn || rooms.length === 0) {
+  if (authLoading) {
+    return (
+      <DashboardLayout>
+        <div className="flex items-center justify-center h-full">
+          <Loader2 className="h-8 w-8 animate-spin text-accent" />
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  if (!user || rooms.length === 0) {
     return null;
   }
 
@@ -129,15 +182,14 @@ const Reservation = () => {
     : 0;
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navigation />
-      <div className="pt-24 pb-12 px-4">
-        <div className="container mx-auto max-w-4xl">
-          <div className="text-center mb-12">
-            <h1 className="font-serif text-4xl md:text-5xl font-bold mb-4">
+    <DashboardLayout>
+      <div className="p-6">
+        <div className="max-w-4xl mx-auto">
+          <div className="mb-8">
+            <h1 className="font-serif text-3xl md:text-4xl font-bold mb-2">
               Completar reserva
             </h1>
-            <p className="text-muted-foreground text-lg">
+            <p className="text-muted-foreground">
               Ingrese los detalles de su estadía
             </p>
           </div>
@@ -321,8 +373,16 @@ const Reservation = () => {
                     className="w-full" 
                     size="lg"
                     onClick={form.handleSubmit(onSubmit)}
+                    disabled={submitting}
                   >
-                    Confirmar reserva
+                    {submitting ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Procesando...
+                      </>
+                    ) : (
+                      "Confirmar reserva"
+                    )}
                   </Button>
                 </CardContent>
               </Card>
@@ -343,7 +403,7 @@ const Reservation = () => {
                           <div className="font-semibold">{room.name}</div>
                           <div className="text-sm text-muted-foreground flex items-center justify-between">
                             <span>{room.capacity} personas</span>
-                            <span className="font-medium">${room.rate}/noche</span>
+                            <span className="font-medium">${room.price}/noche</span>
                           </div>
                         </div>
                       ))}
@@ -395,7 +455,7 @@ const Reservation = () => {
           </div>
         </div>
       </div>
-    </div>
+    </DashboardLayout>
   );
 };
 
