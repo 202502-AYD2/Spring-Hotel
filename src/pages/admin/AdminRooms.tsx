@@ -64,24 +64,18 @@ const AdminRooms = () => {
     status: "available",
     features: "",
   });
-
-  const [correos, setCorreos] = useState([
-    "juan.jgomez@udea.edu.co",
-    "andresc.areiza@udea.edu.co",
-    "karen.cardonag@udea.edu.co",
-    "sebas.fj@hotmail.com",
-  ]);
-
   useEffect(() => {
-    if (!authLoading && !roleLoading) {
+    if (authLoading || roleLoading) return;
+
+    const timer = setTimeout(() => {
       if (!user) {
-        navigate("/login");
+        navigate("/login", { replace: true });
       } else if (!isAdmin) {
-        if (!correos.includes(user.email)) {
-          navigate("/dashboard");
-        }
+        navigate("/dashboard", { replace: true });
       }
-    }
+    }, 500); // <- 150ms es suficiente para que el rol cargue
+
+    return () => clearTimeout(timer);
   }, [user, isAdmin, authLoading, roleLoading, navigate]);
 
   useEffect(() => {
