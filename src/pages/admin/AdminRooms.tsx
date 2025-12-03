@@ -14,6 +14,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Plus, Pencil, Trash2 } from "lucide-react";
+import { DashboardLayout } from "@/components/DashboardLayout";
+
 
 interface Room {
   id: string;
@@ -170,12 +172,14 @@ const AdminRooms = () => {
 
   if (authLoading || roleLoading || loading) {
     return (
+      <DashboardLayout>
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-accent border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-muted-foreground">Cargando...</p>
         </div>
       </div>
+      </DashboardLayout>
     );
   }
 

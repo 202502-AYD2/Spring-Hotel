@@ -13,7 +13,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         <main className="flex-1 flex flex-col">
           <header className="h-14 flex items-center border-b border-border px-4 bg-background">
             <SidebarTrigger className="mr-4" />
-            <span className="font-serif text-xl font-semibold text-accent">Hotel Luxury</span>
+            <span className="font-serif text-xl font-semibold text-accent">Hotel Spring</span>
           </header>
           <div className="flex-1 overflow-auto">
             {children}

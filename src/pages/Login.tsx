@@ -20,7 +20,7 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
+ /* useEffect(() => {
     if (!authLoading && !roleLoading && user && role) {
       if (role === 'admin') {
         navigate('/admin');
@@ -28,7 +28,7 @@ const Login = () => {
         navigate('/dashboard');
       }
     }
-  }, [user, role, authLoading, roleLoading, navigate]);
+  }, [user, role, authLoading, roleLoading, navigate]);*/
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -59,6 +59,7 @@ const Login = () => {
 
         if (error) throw error;
         toast.success("¡Bienvenido de nuevo!");
+        navigate("/dashboard");
       } else {
         const redirectUrl = `${window.location.origin}/`;
         const { error } = await supabase.auth.signUp({

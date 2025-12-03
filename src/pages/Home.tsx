@@ -11,7 +11,7 @@ const Home = () => {
   const { user, loading: authLoading } = useAuth();
   const { role, loading: roleLoading } = useUserRole(user?.id);
 
-  useEffect(() => {
+/*  useEffect(() => {
     if (!authLoading && !roleLoading && user && role) {
       if (role === 'admin') {
         navigate('/admin');
@@ -19,7 +19,7 @@ const Home = () => {
         navigate('/dashboard');
       }
     }
-  }, [user, role, authLoading, roleLoading, navigate]);
+  }, [user, role, authLoading, roleLoading, navigate]);*/
 
   if (authLoading || roleLoading) {
     return (

@@ -27,18 +27,20 @@ interface Profile {
 }
 
 const clientItems = [
+  { title: "Mi Perfil", url: "/profile", icon: User },
   { title: "Dashboard", url: "/dashboard", icon: Home },
   { title: "Habitaciones", url: "/rooms", icon: Bed },
   { title: "Mis Reservas", url: "/my-reservations", icon: Calendar },
-  { title: "Mi Perfil", url: "/profile", icon: User },
+  
 ];
 
 const adminItems = [
+  { title: "Mi Perfil", url: "/profile", icon: User },
   { title: "Dashboard", url: "/admin", icon: LayoutDashboard },
   { title: "Habitaciones", url: "/admin/rooms", icon: Bed },
   { title: "Reservas", url: "/admin/reservations", icon: Calendar },
   { title: "Usuarios", url: "/admin/users", icon: Users },
-  { title: "Mi Perfil", url: "/profile", icon: User },
+
 ];
 
 export function AppSidebar() {

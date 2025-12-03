@@ -13,6 +13,8 @@ import { toast } from "sonner";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { CheckCircle, XCircle, Clock } from "lucide-react";
+import { DashboardLayout } from "@/components/DashboardLayout";
+
 
 interface Reservation {
   id: string;

@@ -38,7 +38,7 @@ const Navigation = () => {
               {isAdmin ? (
                 <>
                   <Button variant="ghost" onClick={() => navigate("/admin")}>
-                    Dashboard Admin
+                    Dashboard 
                   </Button>
                   <Button variant="ghost" onClick={() => navigate("/admin/rooms")}>
                     Habitaciones
