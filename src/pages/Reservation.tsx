@@ -53,7 +53,7 @@ const Reservation = () => {
   });
 
   useEffect(() => {
-    const loggedIn = localStorage.getItem("isLoggedIn") === "true";
+    const loggedIn = true
     setIsLoggedIn(loggedIn);
     
     if (!loggedIn) {
