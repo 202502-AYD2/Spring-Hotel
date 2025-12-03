@@ -11,6 +11,7 @@ import Rooms from "./pages/Rooms";
 import Reservation from "./pages/Reservation";
 import Confirmation from "./pages/Confirmation";
 import MyReservations from "./pages/MyReservations";
+import Profile from "./pages/Profile";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminRooms from "./pages/admin/AdminRooms";
 import AdminReservations from "./pages/admin/AdminReservations";
@@ -33,6 +34,7 @@ const App = () => (
           <Route path="/reservation" element={<ProtectedRoute><Reservation /></ProtectedRoute>} />
           <Route path="/confirmation" element={<ProtectedRoute><Confirmation /></ProtectedRoute>} />
           <Route path="/my-reservations" element={<ProtectedRoute><MyReservations /></ProtectedRoute>} />
+          <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
           <Route path="/admin" element={<ProtectedRoute requireAdmin><AdminDashboard /></ProtectedRoute>} />
           <Route path="/admin/rooms" element={<ProtectedRoute requireAdmin><AdminRooms /></ProtectedRoute>} />
           <Route path="/admin/reservations" element={<ProtectedRoute requireAdmin><AdminReservations /></ProtectedRoute>} />

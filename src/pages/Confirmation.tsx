@@ -2,18 +2,19 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { CheckCircle2, Download, Home } from "lucide-react";
+import { CheckCircle2, Download, Home, Loader2 } from "lucide-react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
-import Navigation from "@/components/Navigation";
+import { DashboardLayout } from "@/components/DashboardLayout";
+import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 
 interface Room {
-  id: number;
+  id: string;
   name: string;
   type: string;
   capacity: number;
-  rate: number;
+  price: number;
 }
 
 interface GuestData {
@@ -36,11 +37,11 @@ interface Reservation {
 
 const Confirmation = () => {
   const navigate = useNavigate();
+  const { user, loading: authLoading } = useAuth();
   const [reservation, setReservation] = useState<Reservation | null>(null);
 
   useEffect(() => {
-    const isLoggedIn = true
-    if (!isLoggedIn) {
+    if (!authLoading && !user) {
       navigate("/login");
       return;
     }
@@ -53,12 +54,21 @@ const Confirmation = () => {
     }
 
     setReservation(JSON.parse(currentReservation));
-  }, [navigate]);
+  }, [navigate, user, authLoading]);
 
   const handleDownload = () => {
     toast.success("Descargando confirmación de reserva...");
-    // En una aplicación real, aquí se generaría un PDF
   };
+
+  if (authLoading) {
+    return (
+      <DashboardLayout>
+        <div className="flex items-center justify-center h-full">
+          <Loader2 className="h-8 w-8 animate-spin text-accent" />
+        </div>
+      </DashboardLayout>
+    );
+  }
 
   if (!reservation) {
     return null;
@@ -69,18 +79,17 @@ const Confirmation = () => {
   const nights = Math.ceil((checkOut.getTime() - checkIn.getTime()) / (1000 * 60 * 60 * 24));
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navigation />
-      <div className="pt-24 pb-12 px-4">
-        <div className="container mx-auto max-w-3xl">
+    <DashboardLayout>
+      <div className="p-6">
+        <div className="max-w-3xl mx-auto">
           <div className="text-center mb-8">
             <div className="inline-flex items-center justify-center w-20 h-20 bg-accent/10 rounded-full mb-6">
               <CheckCircle2 className="w-10 h-10 text-accent" />
             </div>
-            <h1 className="font-serif text-4xl md:text-5xl font-bold mb-4">
+            <h1 className="font-serif text-3xl md:text-4xl font-bold mb-4">
               ¡Reserva confirmada!
             </h1>
-            <p className="text-muted-foreground text-lg">
+            <p className="text-muted-foreground">
               Su reserva ha sido procesada exitosamente
             </p>
           </div>
@@ -169,7 +178,7 @@ const Confirmation = () => {
                         {nights} {nights === 1 ? "noche" : "noches"}
                       </div>
                       <div className="text-sm text-muted-foreground">
-                        ${reservation.total / nights} por noche
+                        ${Math.round(reservation.total / nights)} por noche
                       </div>
                     </div>
                     <div className="flex items-center justify-between">
@@ -195,7 +204,7 @@ const Confirmation = () => {
                     variant="outline"
                     className="w-full"
                     size="lg"
-                    onClick={() => navigate("/")}
+                    onClick={() => navigate("/dashboard")}
                   >
                     <Home className="mr-2 h-4 w-4" />
                     Volver al inicio
@@ -214,7 +223,7 @@ const Confirmation = () => {
           </div>
         </div>
       </div>
-    </div>
+    </DashboardLayout>
   );
 };
 
