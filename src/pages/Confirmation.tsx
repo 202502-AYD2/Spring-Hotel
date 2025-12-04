@@ -182,7 +182,7 @@ const Confirmation = () => {
                       </div>
                     </div>
                     <div className="flex items-center justify-between">
-                      <div className="font-semibold text-lg">Total pagado</div>
+                      <div className="font-semibold text-lg">Total a pagar</div>
                       <div className="text-3xl font-bold text-accent">
                         ${reservation.total}
                       </div>
