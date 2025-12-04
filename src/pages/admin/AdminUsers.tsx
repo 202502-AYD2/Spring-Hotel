@@ -6,15 +6,27 @@ import Navigation from "@/components/Navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { Shield, User } from "lucide-react";
 import { DashboardLayout } from "@/components/DashboardLayout";
-
 
 interface UserProfile {
   id: string;
@@ -31,23 +43,18 @@ const AdminUsers = () => {
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const [correos, setCorreos] = useState([
-    "juan.jgomez@udea.edu.co",
-    "andresc.areiza@udea.edu.co",
-    "karen.cardonag@udea.edu.co",
-    "sebas.fj@hotmail.com",
-  ]);
-
   useEffect(() => {
-    if (!authLoading && !roleLoading) {
+    if (authLoading || roleLoading) return;
+
+    const timer = setTimeout(() => {
       if (!user) {
-        navigate("/login");
+        navigate("/login", { replace: true });
       } else if (!isAdmin) {
-        if (!correos.includes(user.email)) {
-          navigate("/dashboard");
-        }
+        navigate("/dashboard", { replace: true });
       }
-    }
+    }, 500); // <- 150ms es suficiente para que el rol cargue
+
+    return () => clearTimeout(timer);
   }, [user, isAdmin, authLoading, roleLoading, navigate]);
 
   useEffect(() => {
@@ -89,7 +96,10 @@ const AdminUsers = () => {
     }
   };
 
-  const updateUserRole = async (userId: string, newRole: "cliente" | "admin") => {
+  const updateUserRole = async (
+    userId: string,
+    newRole: "cliente" | "admin"
+  ) => {
     try {
       // First, delete existing role
       const { error: deleteError } = await supabase
@@ -115,7 +125,7 @@ const AdminUsers = () => {
   };
 
   const getUserRole = (userRoles: { role: string }[]): "admin" | "cliente" => {
-    return userRoles.find(r => r.role === "admin") ? "admin" : "cliente";
+    return userRoles.find((r) => r.role === "admin") ? "admin" : "cliente";
   };
 
   if (authLoading || roleLoading || loading) {
@@ -130,77 +140,108 @@ const AdminUsers = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navigation />
-      <div className="pt-24 pb-12 px-4">
-        <div className="container mx-auto max-w-7xl">
-          <div className="mb-8">
-            <h1 className="text-4xl font-serif font-bold mb-2">Gestión de Usuarios</h1>
-            <p className="text-muted-foreground">Administra usuarios y roles del sistema</p>
-          </div>
+    <DashboardLayout>
+      <div className="min-h-screen bg-background">
+        <div className="pt-24 pb-12 px-4">
+          <div className="container mx-auto max-w-7xl">
+            <div className="mb-8">
+              <h1 className="text-4xl font-serif font-bold mb-2">
+                Gestión de Usuarios
+              </h1>
+              <p className="text-muted-foreground">
+                Administra usuarios y roles del sistema
+              </p>
+            </div>
 
-          <Card className="shadow-elegant">
-            <CardHeader>
-              <CardTitle>Usuarios ({users.length})</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Nombre</TableHead>
-                    <TableHead>Email</TableHead>
-                    <TableHead>Rol</TableHead>
-                    <TableHead>Fecha de registro</TableHead>
-                    <TableHead>Acciones</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {users.map((userProfile) => {
-                    const currentRole = getUserRole(userProfile.user_roles);
-                    const isCurrentUser = userProfile.id === user?.id;
-                    
-                    return (
-                      <TableRow key={userProfile.id}>
-                        <TableCell className="font-medium">{userProfile.name}</TableCell>
-                        <TableCell>{userProfile.email}</TableCell>
-                        <TableCell>
-                          <Badge variant={currentRole === "admin" ? "default" : "secondary"} className="flex items-center gap-1 w-fit">
-                            {currentRole === "admin" ? <Shield className="w-3 h-3" /> : <User className="w-3 h-3" />}
-                            {currentRole === "admin" ? "Admin" : "Cliente"}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          {format(new Date(userProfile.created_at), "dd 'de' MMMM, yyyy", { locale: es })}
-                        </TableCell>
-                        <TableCell>
-                          {!isCurrentUser && (
-                            <Select
-                              value={currentRole}
-                              onValueChange={(value) => updateUserRole(userProfile.id, value as "cliente" | "admin")}
+            <Card className="shadow-elegant">
+              <CardHeader>
+                <CardTitle>Usuarios ({users.length})</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Nombre</TableHead>
+                      <TableHead>Email</TableHead>
+                      <TableHead>Rol</TableHead>
+                      <TableHead>Fecha de registro</TableHead>
+                      <TableHead>Acciones</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {users.map((userProfile) => {
+                      const currentRole = getUserRole(userProfile.user_roles);
+                      const isCurrentUser = userProfile.id === user?.id;
+
+                      return (
+                        <TableRow key={userProfile.id}>
+                          <TableCell className="font-medium">
+                            {userProfile.name}
+                          </TableCell>
+                          <TableCell>{userProfile.email}</TableCell>
+                          <TableCell>
+                            <Badge
+                              variant={
+                                currentRole === "admin"
+                                  ? "default"
+                                  : "secondary"
+                              }
+                              className="flex items-center gap-1 w-fit"
                             >
-                              <SelectTrigger className="w-[120px]">
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="cliente">Cliente</SelectItem>
-                                <SelectItem value="admin">Admin</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          )}
-                          {isCurrentUser && (
-                            <span className="text-sm text-muted-foreground italic">Tu cuenta</span>
-                          )}
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
+                              {currentRole === "admin" ? (
+                                <Shield className="w-3 h-3" />
+                              ) : (
+                                <User className="w-3 h-3" />
+                              )}
+                              {currentRole === "admin" ? "Admin" : "Cliente"}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            {format(
+                              new Date(userProfile.created_at),
+                              "dd 'de' MMMM, yyyy",
+                              { locale: es }
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            {!isCurrentUser && (
+                              <Select
+                                value={currentRole}
+                                onValueChange={(value) =>
+                                  updateUserRole(
+                                    userProfile.id,
+                                    value as "cliente" | "admin"
+                                  )
+                                }
+                              >
+                                <SelectTrigger className="w-[120px]">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="cliente">
+                                    Cliente
+                                  </SelectItem>
+                                  <SelectItem value="admin">Admin</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            )}
+                            {isCurrentUser && (
+                              <span className="text-sm text-muted-foreground italic">
+                                Tu cuenta
+                              </span>
+                            )}
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </div>
-    </div>
+    </DashboardLayout>
   );
 };
 

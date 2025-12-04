@@ -8,14 +8,32 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Plus, Pencil, Trash2 } from "lucide-react";
 import { DashboardLayout } from "@/components/DashboardLayout";
-
 
 interface Room {
   id: string;
@@ -46,24 +64,18 @@ const AdminRooms = () => {
     status: "available",
     features: "",
   });
-
-  const [correos, setCorreos] = useState([
-    "juan.jgomez@udea.edu.co",
-    "andresc.areiza@udea.edu.co",
-    "karen.cardonag@udea.edu.co",
-    "sebas.fj@hotmail.com",
-  ]);
-
   useEffect(() => {
-    if (!authLoading && !roleLoading) {
+    if (authLoading || roleLoading) return;
+
+    const timer = setTimeout(() => {
       if (!user) {
-        navigate("/login");
+        navigate("/login", { replace: true });
       } else if (!isAdmin) {
-        if (!correos.includes(user.email)) {
-          navigate("/dashboard");
-        }
+        navigate("/dashboard", { replace: true });
       }
-    }
+    }, 500); // <- 150ms es suficiente para que el rol cargue
+
+    return () => clearTimeout(timer);
   }, [user, isAdmin, authLoading, roleLoading, navigate]);
 
   useEffect(() => {
@@ -100,7 +112,10 @@ const AdminRooms = () => {
         price: formData.price,
         description: formData.description,
         status: formData.status,
-        features: formData.features.split(",").map(f => f.trim()).filter(Boolean),
+        features: formData.features
+          .split(",")
+          .map((f) => f.trim())
+          .filter(Boolean),
       };
 
       if (editingRoom) {
@@ -184,156 +199,225 @@ const AdminRooms = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navigation />
-      <div className="pt-24 pb-12 px-4">
-        <div className="container mx-auto max-w-7xl">
-          <div className="flex justify-between items-center mb-8">
-            <div>
-              <h1 className="text-4xl font-serif font-bold mb-2">Gestión de Habitaciones</h1>
-              <p className="text-muted-foreground">Administra las habitaciones del hotel</p>
+    <DashboardLayout>
+      <div className="min-h-screen bg-background">
+        <div className="pt-24 pb-12 px-4">
+          <div className="container mx-auto max-w-7xl">
+            <div className="flex justify-between items-center mb-8">
+              <div>
+                <h1 className="text-4xl font-serif font-bold mb-2">
+                  Gestión de Habitaciones
+                </h1>
+                <p className="text-muted-foreground">
+                  Administra las habitaciones del hotel
+                </p>
+              </div>
+              <Dialog
+                open={dialogOpen}
+                onOpenChange={(open) => {
+                  setDialogOpen(open);
+                  if (!open) resetForm();
+                }}
+              >
+                <DialogTrigger asChild>
+                  <Button variant="gold">
+                    <Plus className="w-4 h-4 mr-2" />
+                    Nueva Habitación
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-2xl">
+                  <DialogHeader>
+                    <DialogTitle>
+                      {editingRoom ? "Editar Habitación" : "Nueva Habitación"}
+                    </DialogTitle>
+                  </DialogHeader>
+                  <form onSubmit={handleSubmit} className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="name">Nombre</Label>
+                        <Input
+                          id="name"
+                          value={formData.name}
+                          onChange={(e) =>
+                            setFormData({ ...formData, name: e.target.value })
+                          }
+                          required
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="type">Tipo</Label>
+                        <Select
+                          value={formData.type}
+                          onValueChange={(value) =>
+                            setFormData({ ...formData, type: value })
+                          }
+                        >
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="suite">Suite</SelectItem>
+                            <SelectItem value="doble">Doble</SelectItem>
+                            <SelectItem value="sencilla">Sencilla</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="capacity">Capacidad</Label>
+                        <Input
+                          id="capacity"
+                          type="number"
+                          value={formData.capacity}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              capacity: parseInt(e.target.value),
+                            })
+                          }
+                          required
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="price">Precio</Label>
+                        <Input
+                          id="price"
+                          type="number"
+                          value={formData.price}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              price: parseFloat(e.target.value),
+                            })
+                          }
+                          required
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="status">Estado</Label>
+                        <Select
+                          value={formData.status}
+                          onValueChange={(value) =>
+                            setFormData({ ...formData, status: value })
+                          }
+                        >
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="available">
+                              Disponible
+                            </SelectItem>
+                            <SelectItem value="occupied">Ocupada</SelectItem>
+                            <SelectItem value="maintenance">
+                              Mantenimiento
+                            </SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="features">
+                          Características (separadas por comas)
+                        </Label>
+                        <Input
+                          id="features"
+                          value={formData.features}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              features: e.target.value,
+                            })
+                          }
+                          placeholder="WiFi, TV, Minibar"
+                        />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="description">Descripción</Label>
+                      <Textarea
+                        id="description"
+                        value={formData.description}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            description: e.target.value,
+                          })
+                        }
+                        rows={3}
+                      />
+                    </div>
+                    <div className="flex justify-end gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => setDialogOpen(false)}
+                      >
+                        Cancelar
+                      </Button>
+                      <Button type="submit" variant="gold">
+                        {editingRoom ? "Actualizar" : "Crear"}
+                      </Button>
+                    </div>
+                  </form>
+                </DialogContent>
+              </Dialog>
             </div>
-            <Dialog open={dialogOpen} onOpenChange={(open) => { setDialogOpen(open); if (!open) resetForm(); }}>
-              <DialogTrigger asChild>
-                <Button variant="gold">
-                  <Plus className="w-4 h-4 mr-2" />
-                  Nueva Habitación
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-2xl">
-                <DialogHeader>
-                  <DialogTitle>{editingRoom ? "Editar Habitación" : "Nueva Habitación"}</DialogTitle>
-                </DialogHeader>
-                <form onSubmit={handleSubmit} className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="name">Nombre</Label>
-                      <Input
-                        id="name"
-                        value={formData.name}
-                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                        required
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="type">Tipo</Label>
-                      <Select value={formData.type} onValueChange={(value) => setFormData({ ...formData, type: value })}>
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="suite">Suite</SelectItem>
-                          <SelectItem value="doble">Doble</SelectItem>
-                          <SelectItem value="sencilla">Sencilla</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="capacity">Capacidad</Label>
-                      <Input
-                        id="capacity"
-                        type="number"
-                        value={formData.capacity}
-                        onChange={(e) => setFormData({ ...formData, capacity: parseInt(e.target.value) })}
-                        required
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="price">Precio</Label>
-                      <Input
-                        id="price"
-                        type="number"
-                        value={formData.price}
-                        onChange={(e) => setFormData({ ...formData, price: parseFloat(e.target.value) })}
-                        required
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="status">Estado</Label>
-                      <Select value={formData.status} onValueChange={(value) => setFormData({ ...formData, status: value })}>
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="available">Disponible</SelectItem>
-                          <SelectItem value="occupied">Ocupada</SelectItem>
-                          <SelectItem value="maintenance">Mantenimiento</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="features">Características (separadas por comas)</Label>
-                      <Input
-                        id="features"
-                        value={formData.features}
-                        onChange={(e) => setFormData({ ...formData, features: e.target.value })}
-                        placeholder="WiFi, TV, Minibar"
-                      />
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="description">Descripción</Label>
-                    <Textarea
-                      id="description"
-                      value={formData.description}
-                      onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                      rows={3}
-                    />
-                  </div>
-                  <div className="flex justify-end gap-2">
-                    <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
-                      Cancelar
-                    </Button>
-                    <Button type="submit" variant="gold">
-                      {editingRoom ? "Actualizar" : "Crear"}
-                    </Button>
-                  </div>
-                </form>
-              </DialogContent>
-            </Dialog>
-          </div>
 
-          <Card className="shadow-elegant">
-            <CardHeader>
-              <CardTitle>Habitaciones ({rooms.length})</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Nombre</TableHead>
-                    <TableHead>Tipo</TableHead>
-                    <TableHead>Capacidad</TableHead>
-                    <TableHead>Precio</TableHead>
-                    <TableHead>Estado</TableHead>
-                    <TableHead className="text-right">Acciones</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {rooms.map((room) => (
-                    <TableRow key={room.id}>
-                      <TableCell className="font-medium">{room.name}</TableCell>
-                      <TableCell className="capitalize">{room.type}</TableCell>
-                      <TableCell>{room.capacity} personas</TableCell>
-                      <TableCell>${room.price.toLocaleString()}</TableCell>
-                      <TableCell className="capitalize">{room.status}</TableCell>
-                      <TableCell className="text-right space-x-2">
-                        <Button variant="ghost" size="icon" onClick={() => handleEdit(room)}>
-                          <Pencil className="w-4 h-4" />
-                        </Button>
-                        <Button variant="ghost" size="icon" onClick={() => handleDelete(room.id)}>
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      </TableCell>
+            <Card className="shadow-elegant">
+              <CardHeader>
+                <CardTitle>Habitaciones ({rooms.length})</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Nombre</TableHead>
+                      <TableHead>Tipo</TableHead>
+                      <TableHead>Capacidad</TableHead>
+                      <TableHead>Precio</TableHead>
+                      <TableHead>Estado</TableHead>
+                      <TableHead className="text-right">Acciones</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
+                  </TableHeader>
+                  <TableBody>
+                    {rooms.map((room) => (
+                      <TableRow key={room.id}>
+                        <TableCell className="font-medium">
+                          {room.name}
+                        </TableCell>
+                        <TableCell className="capitalize">
+                          {room.type}
+                        </TableCell>
+                        <TableCell>{room.capacity} personas</TableCell>
+                        <TableCell>${room.price.toLocaleString()}</TableCell>
+                        <TableCell className="capitalize">
+                          {room.status}
+                        </TableCell>
+                        <TableCell className="text-right space-x-2">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleEdit(room)}
+                          >
+                            <Pencil className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleDelete(room.id)}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </div>
-    </div>
+    </DashboardLayout>
   );
 };
 
