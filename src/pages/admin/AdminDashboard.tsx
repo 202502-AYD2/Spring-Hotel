@@ -161,7 +161,7 @@ const AdminDashboard = () => {
             </CardHeader>
             <CardContent>
               <p className="text-muted-foreground mb-4">
-                Administrar habitaciones del hotel
+                Ver y Administrar habitaciones del hotel
               </p>
               <Button variant="gold" className="w-full">
                 Ir a Habitaciones
