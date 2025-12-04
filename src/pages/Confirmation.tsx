@@ -192,15 +192,6 @@ const Confirmation = () => {
 
                 <div className="border-t pt-6 space-y-3">
                   <Button
-                    variant="gold"
-                    className="w-full"
-                    size="lg"
-                    onClick={handleDownload}
-                  >
-                    <Download className="mr-2 h-4 w-4" />
-                    Descargar confirmación
-                  </Button>
-                  <Button
                     variant="outline"
                     className="w-full"
                     size="lg"
@@ -216,8 +207,6 @@ const Confirmation = () => {
 
           <div className="mt-8 text-center">
             <p className="text-muted-foreground">
-              Hemos enviado un correo de confirmación a su dirección registrada.
-              <br />
               Si tiene alguna pregunta, no dude en contactarnos.
             </p>
           </div>
