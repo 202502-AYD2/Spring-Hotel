@@ -1,73 +1,187 @@
-# Welcome to your Lovable project
+# 🏨 Spring Hotel - Sistema de Reservas
 
-## Project info
+Sistema de gestión de reservas hoteleras con panel de administración y portal de clientes. Diseñado con una estética moderna, minimalista y de lujo.
 
-**URL**: https://lovable.dev/projects/c5c3bded-c596-4b87-a658-d9ec397004fb
+## 📋 Descripción
 
-## How can I edit this code?
+Spring Hotel es una aplicación web completa para la gestión de reservas de un hotel. Permite a los clientes explorar habitaciones, realizar reservas y gestionar su perfil, mientras que los administradores pueden gestionar habitaciones, reservas y usuarios desde un panel centralizado.
 
-There are several ways of editing your application.
+## 🛠️ Tecnologías Utilizadas
 
-**Use Lovable**
+### Frontend
+- **React 18.3** - Biblioteca de UI
+- **TypeScript** - Tipado estático
+- **Vite** - Bundler y servidor de desarrollo
+- **Tailwind CSS** - Framework de estilos
+- **shadcn/ui** - Componentes de UI
+- **React Router DOM** - Navegación SPA
+- **TanStack Query** - Gestión de estado del servidor
+- **React Hook Form + Zod** - Formularios y validación
+- **Recharts** - Gráficos y visualizaciones
+- **Lucide React** - Iconos
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/c5c3bded-c596-4b87-a658-d9ec397004fb) and start prompting.
+### Backend (Lovable Cloud)
+- **PostgreSQL** - Base de datos relacional
+- **Autenticación** - Email y contraseña con auto-confirmación
+- **Row Level Security (RLS)** - Políticas de seguridad a nivel de fila
+- **Storage** - Almacenamiento de archivos (avatares)
 
-Changes made via Lovable will be committed automatically to this repo.
+### Herramientas de Desarrollo
+- **ESLint** - Linting de código
+- **PostCSS** - Procesamiento de CSS
+- **Bun/npm** - Gestión de paquetes
 
-**Use your preferred IDE**
+## ✨ Características
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+### Portal de Clientes
+- ✅ Registro e inicio de sesión
+- ✅ Explorar habitaciones disponibles con filtros (fecha, tipo, capacidad)
+- ✅ Crear reservas seleccionando múltiples habitaciones
+- ✅ Ver historial de reservas con estados
+- ✅ Cancelar reservas pendientes
+- ✅ Editar perfil personal y foto de avatar
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+### Panel de Administración
+- ✅ Dashboard con estadísticas y gráficos de ocupación
+- ✅ Gestión de habitaciones (crear, editar, eliminar, cambiar estado)
+- ✅ Gestión de reservas (confirmar, cancelar, completar)
+- ✅ Gestión de usuarios y asignación de roles
 
-Follow these steps:
+## 🗄️ Estructura de la Base de Datos
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+### Tablas Principales
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+| Tabla | Descripción |
+|-------|-------------|
+| `profiles` | Datos de perfil de usuarios (nombre, email, teléfono, avatar) |
+| `user_roles` | Roles de usuario (cliente, admin) |
+| `rooms` | Habitaciones del hotel (tipo, capacidad, precio, estado) |
+| `reservations` | Reservas (fechas, huéspedes, habitaciones, precio total) |
 
-# Step 3: Install the necessary dependencies.
-npm i
+### Roles de Usuario
+- **Cliente**: Acceso a dashboard, habitaciones, reservas propias y perfil
+- **Admin**: Acceso completo + gestión de habitaciones, reservas y usuarios
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+## 📁 Estructura del Proyecto
+
+```
+src/
+├── assets/              # Imágenes y recursos estáticos
+├── components/          # Componentes reutilizables
+│   ├── ui/              # Componentes shadcn/ui
+│   ├── AppSidebar.tsx   # Barra lateral de navegación
+│   ├── DashboardLayout.tsx # Layout con sidebar
+│   ├── Navigation.tsx   # Navegación principal
+│   └── ProtectedRoute.tsx # Rutas protegidas
+├── hooks/               # Custom hooks
+│   ├── useAuth.tsx      # Hook de autenticación
+│   └── useUserRole.tsx  # Hook de roles
+├── integrations/        # Integraciones externas
+│   └── supabase/        # Cliente y tipos de Supabase
+├── lib/                 # Utilidades
+│   └── utils.ts         # Funciones helper
+├── pages/               # Páginas de la aplicación
+│   ├── admin/           # Páginas de administración
+│   │   ├── AdminDashboard.tsx
+│   │   ├── AdminReservations.tsx
+│   │   ├── AdminRooms.tsx
+│   │   └── AdminUsers.tsx
+│   ├── Confirmation.tsx # Confirmación de reserva
+│   ├── Dashboard.tsx    # Dashboard del cliente
+│   ├── Home.tsx         # Página de inicio
+│   ├── Login.tsx        # Inicio de sesión / Registro
+│   ├── MyReservations.tsx # Mis reservas
+│   ├── Profile.tsx      # Perfil de usuario
+│   ├── Reservation.tsx  # Proceso de reserva
+│   └── Rooms.tsx        # Listado de habitaciones
+├── App.tsx              # Componente principal con rutas
+├── index.css            # Estilos globales y variables CSS
+└── main.tsx             # Punto de entrada
 ```
 
-**Edit a file directly in GitHub**
+## 🚀 Requisitos Previos
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+- **Node.js 18+** o **Bun**
+- **npm**, **yarn** o **bun** como gestor de paquetes
 
-**Use GitHub Codespaces**
+## 📦 Instalación
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+```bash
+# 1. Clonar el repositorio
+git clone <URL_DEL_REPOSITORIO>
 
-## What technologies are used for this project?
+# 2. Navegar al directorio del proyecto
+cd spring-hotel
 
-This project is built with:
+# 3. Instalar dependencias
+npm install
+# o con bun
+bun install
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+# 4. Iniciar el servidor de desarrollo
+npm run dev
+# o con bun
+bun dev
+```
 
-## How can I deploy this project?
+La aplicación estará disponible en `http://localhost:5173`
 
-Simply open [Lovable](https://lovable.dev/projects/c5c3bded-c596-4b87-a658-d9ec397004fb) and click on Share -> Publish.
+## 📜 Scripts Disponibles
 
-## Can I connect a custom domain to my Lovable project?
+| Script | Descripción |
+|--------|-------------|
+| `npm run dev` | Inicia el servidor de desarrollo con hot-reload |
+| `npm run build` | Genera el build de producción |
+| `npm run preview` | Vista previa del build de producción |
+| `npm run lint` | Ejecuta ESLint para verificar el código |
 
-Yes, you can!
+## 🔐 Variables de Entorno
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+El proyecto utiliza las siguientes variables de entorno (configuradas automáticamente por Lovable Cloud):
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+```env
+VITE_SUPABASE_URL=<url_del_proyecto>
+VITE_SUPABASE_PUBLISHABLE_KEY=<clave_publica>
+VITE_SUPABASE_PROJECT_ID=<id_del_proyecto>
+```
+
+## 🎨 Diseño
+
+### Paleta de Colores
+- **Primario**: Dorado (#D4AF37)
+- **Fondo**: Negro y tonos oscuros
+- **Texto**: Blanco y grises claros
+- **Acentos**: Dorado con variaciones
+
+### Tipografía
+- **Títulos**: Playfair Display (serif)
+- **Cuerpo**: Inter (sans-serif)
+
+### Estilo
+- Moderno y minimalista
+- Estética de lujo hotelero
+- Transmite confianza y calma
+
+## 👥 Uso del Sistema
+
+### Como Cliente
+1. Regístrate con tu email y contraseña
+2. Explora las habitaciones disponibles
+3. Selecciona fechas y habitaciones para tu reserva
+4. Completa los datos de los huéspedes
+5. Confirma tu reserva
+6. Gestiona tus reservas desde "Mis Reservas"
+
+### Como Administrador
+1. Inicia sesión con credenciales de administrador
+2. Accede al panel de administración
+3. Gestiona habitaciones, reservas y usuarios
+4. Consulta estadísticas de ocupación
+
+## 📄 Licencia
+
+Este proyecto fue creado con [Lovable](https://lovable.dev).
+
+---
+
+**Desarrollado con ❤️ usando Lovable**
