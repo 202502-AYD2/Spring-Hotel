@@ -55,6 +55,8 @@ import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminRooms from "./pages/admin/AdminRooms";
 import AdminReservations from "./pages/admin/AdminReservations";
 import AdminUsers from "./pages/admin/AdminUsers";
+import Roomscrearadmin from "./pages/admin/roomscrearadmin";
+import Admincrearreserva from "./pages/admin/admincrearreserva";
 
 // Página de error 404
 import NotFound from "./pages/NotFound";
@@ -119,7 +121,9 @@ const App = () => (
           <Route path="/admin/rooms" element={<ProtectedRoute requireAdmin><AdminRooms /></ProtectedRoute>} />
           <Route path="/admin/reservations" element={<ProtectedRoute requireAdmin><AdminReservations /></ProtectedRoute>} />
           <Route path="/admin/users" element={<ProtectedRoute requireAdmin><AdminUsers /></ProtectedRoute>} />
-          
+          <Route path="/admin/admincrearreserva" element={<ProtectedRoute requireAdmin><Admincrearreserva /></ProtectedRoute>} />
+          <Route path="/admin/roomscrearadmin" element={<ProtectedRoute requireAdmin><Roomscrearadmin /></ProtectedRoute>} />
+
           {/* ============================================ */}
           {/* CATCH-ALL - Debe estar al final */}
           {/* ============================================ */}
