@@ -62,6 +62,23 @@ Spring Hotel es una aplicación web completa para la gestión de reservas de un 
 - **Cliente**: Acceso a dashboard, habitaciones, reservas propias y perfil
 - **Admin**: Acceso completo + gestión de habitaciones, reservas y usuarios
 
+## Url del Proyecto Desplegado
+https://spring-hotel.vercel.app
+
+### Usuarios de Prueba
+**Admin**: 
+
+Correo: admin@gmail.com
+
+Contraseña: abc123
+
+**Usuario**:
+
+Correo: usuario@gmail.com
+
+Contraseña: abc123
+
+
 ## 📁 Estructura del Proyecto
 
 ```
@@ -140,9 +157,9 @@ La aplicación estará disponible en `http://localhost:5173`
 El proyecto utiliza las siguientes variables de entorno (configuradas automáticamente por Lovable Cloud):
 
 ```env
-VITE_SUPABASE_URL=<url_del_proyecto>
-VITE_SUPABASE_PUBLISHABLE_KEY=<clave_publica>
-VITE_SUPABASE_PROJECT_ID=<id_del_proyecto>
+VITE_SUPABASE_URL=<https://aognyubjwspmkzeheawe.supabase.co>
+VITE_SUPABASE_PUBLISHABLE_KEY=<eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFvZ255dWJqd3NwbWt6ZWhlYXdlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ3MDU3NDAsImV4cCI6MjA4MDI4MTc0MH0.WJmP9juvY0jtwaBKZMVsNfKGmsyijfO1CuLYaq-Puzs>
+VITE_SUPABASE_PROJECT_ID=<uujieazftxnfunftvjpw>
 ```
 
 ## 🎨 Diseño
@@ -178,10 +195,4 @@ VITE_SUPABASE_PROJECT_ID=<id_del_proyecto>
 3. Gestiona habitaciones, reservas y usuarios
 4. Consulta estadísticas de ocupación
 
-## 📄 Licencia
 
-Este proyecto fue creado con [Lovable](https://lovable.dev).
-
----
-
-**Desarrollado con ❤️ usando Lovable**
