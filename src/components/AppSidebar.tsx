@@ -1,3 +1,19 @@
+/**
+ * @fileoverview Componente de sidebar principal de la aplicación
+ * @module AppSidebar
+ * 
+ * @description
+ * Sidebar responsivo que muestra la navegación de la aplicación adaptada al rol del usuario.
+ * Incluye información del perfil, menú de navegación y botón de cerrar sesión.
+ * 
+ * @design-decisions
+ * - La navegación se adapta dinámicamente según el rol (cliente vs admin)
+ * - El sidebar usa el estado collapsed de shadcn/ui para modo compacto
+ * - Los items de navegación están definidos como constantes para fácil mantenimiento
+ * - El avatar muestra iniciales como fallback si no hay imagen
+ * - La función isActive maneja rutas exactas vs prefijos para resaltar correctamente
+ */
+
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Home, Bed, Calendar, User, Users, LogOut, LayoutDashboard } from "lucide-react";
@@ -20,12 +36,28 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 
+// ============================================
+// TYPES - Definición de tipos
+// ============================================
+
+/**
+ * Estructura del perfil de usuario para el sidebar
+ * Solo incluye campos necesarios para la visualización
+ */
 interface Profile {
   name: string;
   email: string;
   avatar_url: string | null;
 }
 
+// ============================================
+// CONSTANTS - Items de navegación por rol
+// ============================================
+
+/**
+ * Items de navegación para usuarios con rol 'cliente'
+ * Orden: Perfil, Dashboard, Habitaciones, Mis Reservas
+ */
 const clientItems = [
   { title: "Mi Perfil", url: "/profile", icon: User },
   { title: "Dashboard", url: "/dashboard", icon: Home },
@@ -34,6 +66,10 @@ const clientItems = [
   
 ];
 
+/**
+ * Items de navegación para usuarios con rol 'admin'
+ * Incluye gestión de habitaciones, reservas y usuarios
+ */
 const adminItems = [
   { title: "Mi Perfil", url: "/profile", icon: User },
   { title: "Dashboard", url: "/admin", icon: LayoutDashboard },
@@ -43,22 +79,57 @@ const adminItems = [
 
 ];
 
+// ============================================
+// COMPONENT - Sidebar principal
+// ============================================
+
+/**
+ * Componente de sidebar con navegación adaptativa por rol
+ * 
+ * @description
+ * Renderiza un sidebar con:
+ * - Header: Avatar y datos del usuario
+ * - Content: Menú de navegación basado en rol
+ * - Footer: Botón de cerrar sesión
+ * 
+ * @example
+ * ```tsx
+ * // Se usa dentro de SidebarProvider en DashboardLayout
+ * <SidebarProvider>
+ *   <AppSidebar />
+ *   <main>{children}</main>
+ * </SidebarProvider>
+ * ```
+ * 
+ * @returns {JSX.Element} Sidebar con navegación y acciones de usuario
+ */
 export function AppSidebar() {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
   const { isAdmin } = useUserRole(user?.id);
+  
+  // Estado collapsed del sidebar desde el context
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
   
+  // Estado local para datos del perfil
   const [profile, setProfile] = useState<Profile | null>(null);
 
+  // ============================================
+  // EFFECTS - Carga de datos del perfil
+  // ============================================
+  
   useEffect(() => {
     if (user) {
       fetchProfile();
     }
   }, [user]);
 
+  /**
+   * Obtiene los datos del perfil del usuario desde Supabase
+   * Solo carga los campos necesarios para el sidebar
+   */
   const fetchProfile = async () => {
     if (!user) return;
     
@@ -73,21 +144,58 @@ export function AppSidebar() {
     }
   };
 
+  // ============================================
+  // HANDLERS - Funciones de interacción
+  // ============================================
+
+  /**
+   * Cierra la sesión del usuario y redirige a login
+   */
   const handleLogout = async () => {
     await supabase.auth.signOut();
     navigate("/login");
   };
 
+  // ============================================
+  // HELPER FUNCTIONS - Funciones auxiliares
+  // ============================================
+
+  /**
+   * Selecciona items de navegación según el rol del usuario
+   */
   const items = isAdmin ? adminItems : clientItems;
   const currentPath = location.pathname;
 
+  /**
+   * Determina si un item de navegación está activo
+   * 
+   * @description
+   * Para dashboard ("/dashboard" o "/admin") usa comparación exacta
+   * Para otras rutas usa startsWith para incluir sub-rutas
+   * 
+   * @param {string} path - Ruta a verificar
+   * @returns {boolean} true si la ruta está activa
+   */
   const isActive = (path: string) => {
+    // Rutas dashboard requieren match exacto para evitar false positives
     if (path === "/dashboard" || path === "/admin") {
       return currentPath === path;
     }
+    // Otras rutas usan prefijo para incluir sub-rutas
     return currentPath.startsWith(path);
   };
 
+  /**
+   * Genera iniciales a partir del nombre del usuario
+   * Usado como fallback cuando no hay avatar
+   * 
+   * @param {string} name - Nombre completo del usuario
+   * @returns {string} Máximo 2 caracteres en mayúsculas
+   * 
+   * @example
+   * getInitials("Juan Pérez") // "JP"
+   * getInitials("María") // "M"
+   */
   const getInitials = (name: string) => {
     return name
       .split(" ")
@@ -97,16 +205,26 @@ export function AppSidebar() {
       .slice(0, 2);
   };
 
+  // ============================================
+  // RENDER - Renderizado del componente
+  // ============================================
+
   return (
     <Sidebar className="border-r border-border">
+      {/* ============================================ */}
+      {/* HEADER - Información del usuario */}
+      {/* ============================================ */}
       <SidebarHeader className="p-4 border-b border-border">
         <div className="flex items-center gap-3">
+          {/* Avatar con borde dorado (accent color) */}
           <Avatar className="h-10 w-10 border-2 border-accent">
             <AvatarImage src={profile?.avatar_url || undefined} />
             <AvatarFallback className="bg-accent text-accent-foreground font-semibold">
               {profile?.name ? getInitials(profile.name) : "U"}
             </AvatarFallback>
           </Avatar>
+          
+          {/* Nombre y email - ocultos cuando sidebar está collapsed */}
           {!collapsed && (
             <div className="flex flex-col overflow-hidden">
               <span className="font-semibold text-foreground truncate">
@@ -120,6 +238,9 @@ export function AppSidebar() {
         </div>
       </SidebarHeader>
 
+      {/* ============================================ */}
+      {/* CONTENT - Menú de navegación */}
+      {/* ============================================ */}
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupLabel className="text-muted-foreground">
@@ -153,6 +274,9 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
+      {/* ============================================ */}
+      {/* FOOTER - Botón de cerrar sesión */}
+      {/* ============================================ */}
       <SidebarFooter className="p-4 border-t border-border">
         <Button
           variant="ghost"
