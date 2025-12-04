@@ -27,6 +27,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserRole } from "@/hooks/useUserRole";
 
+
 // ============================================
 // COMPONENT - Página de Login/Registro
 // ============================================
@@ -185,9 +186,11 @@ const Login = () => {
             {/* ============================================ */}
             <CardHeader className="text-center">
               {/* Logo circular con inicial del hotel */}
-              <div className="w-16 h-16 bg-accent rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-accent-foreground font-serif font-bold text-2xl">S</span>
-              </div>
+              <img 
+                src="/favicon.png"
+                alt="Log"
+                className="w-20 h-20 mx-auto mb-4 object-contain" // <--- Clases para control de tamaño
+              />
               
               {/* Título dinámico según modo */}
               <CardTitle className="text-3xl font-serif">

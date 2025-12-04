@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import Navigation from "@/components/Navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserRole } from "@/hooks/useUserRole";
-import hotelHero from "@/assets/hotel-hero.jpg";
+import hotelHero from "@/assets/hotel-hero.png";
 
 const Home = () => {
   const navigate = useNavigate();
@@ -45,11 +45,9 @@ const Home = () => {
         <div className="absolute inset-0 gradient-hero" />
         
         <div className="relative h-full flex flex-col items-center justify-center text-center px-4">
-          <h1 className="font-serif text-5xl md:text-7xl font-bold text-white mb-4">
-            SPRING
-          </h1>
+          
           <p className="text-xl md:text-2xl text-white/90 mb-12 max-w-2xl">
-            Experimente el lujo y la elegancia en cada detalle
+            
           </p>
 
           <Button variant="gold" size="lg" onClick={() => navigate("/login")}>
