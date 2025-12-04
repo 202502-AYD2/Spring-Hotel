@@ -247,6 +247,21 @@ const Reservation = () => {
     }
 
     setSubmitting(true);
+    const email = form.getValues("email");
+
+// ✅ Buscar el ID del usuario usando el email
+const { data: profile, error: profileError } = await supabase
+  .from("profiles")
+  .select("id")
+  .eq("email", email)
+  .single();
+
+if (profileError || !profile) {
+  console.error("No existe usuario con ese email");
+  toast.error("No existe un usuario con ese correo");
+  setSubmitting(false);
+  return;
+}
     try {
       // ============================================
       // DATABASE INSERT - Guardar reserva en Supabase
@@ -254,7 +269,7 @@ const Reservation = () => {
       const { data, error } = await supabase
         .from("reservations")
         .insert({
-          user_id: user.id,                           // ID del usuario autenticado
+          user_id:profile.id,                           // ID del usuario autenticado
           room_ids: rooms.map((r) => r.id),          // Array de IDs de habitaciones
           check_in: format(checkIn, "yyyy-MM-dd"),   // Fecha formato ISO
           check_out: format(checkOut, "yyyy-MM-dd"), // Fecha formato ISO

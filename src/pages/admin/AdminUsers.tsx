@@ -213,6 +213,7 @@ const AdminUsers = () => {
                                     value as "cliente" | "admin"
                                   )
                                 }
+                                disabled={true}
                               >
                                 <SelectTrigger className="w-[120px]">
                                   <SelectValue />

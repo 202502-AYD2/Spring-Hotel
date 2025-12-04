@@ -190,6 +190,11 @@ const AdminReservations = () => {
                   Administra todas las reservas del hotel
                 </p>
               </div>
+              <div>
+              <Button variant="gold" onClick={() => navigate("/admin/roomscrearadmin")}>
+              Hacer una nueva reserva
+            </Button>
+              </div>
               <Select value={filterStatus} onValueChange={setFilterStatus}>
                 <SelectTrigger className="w-[180px]">
                   <SelectValue placeholder="Filtrar por estado" />
