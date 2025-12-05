@@ -6,6 +6,12 @@ Sistema de gestión de reservas hoteleras con panel de administración y portal 
 
 Spring Hotel es una aplicación web completa para la gestión de reservas de un hotel. Permite a los clientes explorar habitaciones, realizar reservas y gestionar su perfil, mientras que los administradores pueden gestionar habitaciones, reservas y usuarios desde un panel centralizado.
 
+## Integrantes del Equipo
+- **Andrés Camilo Areiza Londoño**
+- **Sebastián Flórez Jaramillo**
+- **Juan José Jaramillo Gómez**
+- **Karen Cardona Gutiérrez**
+
 ## 🛠️ Tecnologías Utilizadas
 
 ### Frontend
